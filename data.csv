@@ -1,0 +1,44 @@
+path,term,address
+,ego,me
++f,mother,mom
++m,father,dad
+>m,older brother,brother
+<m,younger brother,brother
+>f,older sister,sister
+<f,younger sister,sister
++f.+m,maternal grandfather,grandpa
++f.+f,maternal grandmother,grandma
++m.+m,paternal grandfather,grandpa
++m.+f,paternal grandma,grandma
+~m,spouse,husband
+~f,spouse,wife
+~*.=m,brother-in-law,brother-in-law
+~*.=f,sister-in-law,sister-in-law
+~*.=m.~*m,brother-in-law's husband,brother-in-law
+~*.=m.~*f,brother-in-law's wife,sister-in-law
+~*.=f.~*m,sister-in-law's husband,brother-in-law
+~*.=f.~*f,sister-in-law's wife,sister-in-law
+~*.+m,father-in-law,father-in-law
+~*.+f,mother-in-law,mother-in-law
+~*.+m.+m,paternal grandfather-in-law,grandfather-in-law
+~*.+m.+f,paternal grandmother-in-law,grandmother-in-law
+~*.+f.+m,maternal grandfather-in-law,grandfather-in-law
+~*.+f.+f,maternal grandmother-in-law,grandmother-in-law
++m.=*.-*,paternal cousin,1st cousin
++f.=*.-*,maternal cousin,1st cousin
++m.=m,paternal uncle,uncle
++m.=f,paternal aunt,aunt
++f.=m,maternal uncle,uncle
++f.=f,maternal aunt,aunt
++*.+*.=m,granduncle,granduncle
++*.+*.=f,grandaunt,grandaunt
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,

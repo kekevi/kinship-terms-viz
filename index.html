@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <script src="./FamilyTreeJS/familytree.js"></script>
+  </head>
+  <body>
+    <div style="width:100%; height:700px;" id="tree"></div>
+    <div id="palette", style="display: none">
+
+    </div>
+    <script>
+      var family = new FamilyTree(document.getElementById("tree"), {
+        nodeBinding: {
+            field_0: "name"
+        },
+        nodes: [
+            { id: 'potato', pids: [2], name: "Amber McKenzie" },
+            { id: 2, pids: ['potato'], name: "Ava Field" },
+            { id: 3, mid: 'potato', fid: 2, name: "Peter Stevens" }  
+        ],
+        
+      });
+      family.on('click', (sender, {event, node}) => {
+        console.log(sender)
+        console.log(event)
+        console.log(node)
+        return false
+      })
+  </script> 
+  </body>
+</html>
