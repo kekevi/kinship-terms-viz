@@ -1,4 +1,4 @@
-import { Kinship } from "./kinship";
+// import { Kinship } from "./kinship";
 
 
 
@@ -17,12 +17,14 @@ var valid = 9;
 
 var answers = [];
 var genders = [];
+var value1  = "";
+var value2 = "";
 // The genders array prevents us from making the following error:
 //    father's father's daughter = aunt & could also be mother
 //    the correct answer is simply aunt -- mother is incorrect
 
 function Spouse(sex) {
-  var input = document.display.input.value;
+  var input = value;
   if (input != "") {
     input += "'s ";
   }
@@ -33,7 +35,7 @@ function Spouse(sex) {
   } else { // sex is ''
     input += "spouse";
   }
-  document.display.input.value = input;
+  value = input;
 
   var origLength = answers.length
   for (i=0; i<origLength; i++) {
@@ -194,7 +196,7 @@ function Display() {
 
     if (h == 0) { // same generation
       if (w == 0) {
-        if (document.display.input.value != "") {
+        if (value != "") {
           if (ss) {
             if (g == 'm') {
               answer += "husband";
@@ -364,19 +366,19 @@ function Display() {
   }
   var comma = answer.indexOf(", ");
   if (comma == -1) {
-    document.display.answer.value = answer;
-    document.display.answer2.value = "";
+    value = answer;
+    value2 = "";
   } else {
-    document.display.answer.value = answer.substr(0, comma);
-    document.display.answer2.value = answer.substr(comma+2);
+    value = answer.substr(0, comma);
+    value2 = answer.substr(comma+2);
   }
 
-  if (document.display.answer.value != "") {
+  if (value != "") {
     if (answers[0][selfSpouse] || answers[0][parentSpouse] || answers[0][siblingSpouse] ||
         answers[0][childSpouse] || answers[0][otherSpouse]) {
-      document.display.answer.value += "  (non-blood relative)";
+      value += "  (non-blood relative)";
     } else {
-      document.display.answer.value += "  (blood relative)";
+      value += "  (blood relative)";
     }
   }
 }
@@ -384,7 +386,6 @@ function Display() {
 function NewAnswer(i) {
   answers[i][height] = 0;
   answers[i][width] = 0;
-  answers[i][height] = 0;
   answers[i][gender] = '';
   answers[i][sibling] = '0';
   answers[i][selfSpouse] = 0;
@@ -399,7 +400,7 @@ function Calculate(delta, sex) {
 
   // display keystrokes that the user typed
 
-  var input = document.display.input.value;
+  var input = value;
   if (input != "") {
     input += "'s ";
   }
@@ -428,7 +429,7 @@ function Calculate(delta, sex) {
       input += "child";
     }
   }
-  document.display.input.value = input;
+  value = input;
 
   // calculate the relationship as a n-tuple
 
@@ -536,7 +537,7 @@ function Calculate(delta, sex) {
 }
 
 function Clear() {
-  document.display.input.value = "";
+  value = "";
   answers = [[]];
   genders = [];
   NewAnswer(0);
@@ -545,23 +546,56 @@ function Clear() {
 }
 
 
-export class EnglishKinship extends Kinship {
+class EnglishKinship {
   /*
     English kinship terms 
   */
-  
-  _eval
-
   getName(path) {
-    path = this.splitPath(path)
-    if (path.length == 0) return 'me'
-
+    Clear()
+    if (path == "_"){
+      return "You";
+    }
+    path = path.split('.')
+    path.shift()
+    
     for (const node of path) {
       switch (node) {
         case '+m':
-          Calculate(1, 'm')
-          break
+          Calculate(1, 'm');
+          break;
+        case '-m':
+          Calculate(-1, 'm');
+          break;
+        case '=m':
+        case '>m':
+        case '<m':
+          Calculate(0, 'm');
+          break;
+        case '~m':
+          Spouse('m');
+          break;
+        case '+f':
+          Calculate(1, 'f');
+          break;
+        case '-f':
+          Calculate(-1, 'f');
+          break;
+        case '=f':
+        case '>f':
+        case '<f':
+          Calculate(0, 'f');
+          break;
+        case '~f':
+          Spouse('f');
+          break;
+        default:
+          break;
       }
     }
+    return value
   }
+
 }
+
+let kinship = new EnglishKinship()
+
