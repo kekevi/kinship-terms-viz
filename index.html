@@ -1,30 +1,253 @@
 <html>
   <head>
     <script src="./FamilyTreeJS/familytree.js"></script>
+    <script src="./custom-FamilyTreeJS-templates.js"></script> <!--must be after FamilyTreeJS import-->
+    <script src="./english-kinship.js"></script>
+    <script type="module">
+      import { ChineseKinship } from "./chinese-kinship.js";
+      console.log('chinese loaded')
+      window.ChineseKinship = ChineseKinship
+    </script>
+    <script>
+      function makeElement(tagName, attributes = {}, ...children) {
+        const element = document.createElement(tagName)
+        
+        for (const field in attributes) {
+          const value = attributes[field]
+          element.setAttribute(field, value)
+        }
+
+        element.append(...children)
+        return element
+      }
+    </script>
+    <style>
+      body, #tree {
+        background-color: darkslategray;
+        font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+      }
+
+      #language-select {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        font-size: 20px;
+        background-color: #3D3D3D;
+        background: #eee;
+
+        /* position: relative; */
+        display: block;
+        width: 300px;
+        margin: 0 auto;
+        font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+
+        /* font-family: 'Open Sans', 'Helvetica Neue', 'Segoe UI', 'Calibri', 'Arial', sans-serif; */
+        font-size: 18px;
+      }
+
+      .add-button {
+        position: fixed;
+        border-radius: 15px;
+        min-height: 30px;
+        width: 100px;
+        border-radius: 6px;
+        color: #3D3D3D;
+        background: #eee;
+        border: 1px solid black;
+        box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.1);
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+    
+      .add-button:hover {
+        background-color: gray;
+        box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.1), 0px 0px 0px 3.5px rgba(58, 108, 217, 0.5);
+        outline: 0;
+      }
+    </style>
   </head>
   <body>
-    <div style="width:100%; height:700px;" id="tree"></div>
-    <div id="palette", style="display: none">
-
-    </div>
+    <div style="width:100%; height:100%;" id="tree"></div>
+    <select id="language-select">
+      <option value="en">English</option>
+      <option value="zh">中文 (Chinese)</option>
+    </select>
     <script>
-      var family = new FamilyTree(document.getElementById("tree"), {
-        nodeBinding: {
-            field_0: "name"
-        },
-        nodes: [
-            { id: 'potato', pids: [2], name: "Amber McKenzie" },
-            { id: 2, pids: ['potato'], name: "Ava Field" },
-            { id: 3, mid: 'potato', fid: 2, name: "Peter Stevens" }  
-        ],
-        
-      });
-      family.on('click', (sender, {event, node}) => {
-        console.log(sender)
-        console.log(event)
-        console.log(node)
-        return false
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('document loaded')
+        const languageSelect = document.getElementById('language-select')
+        const getPaletteButtons = () => Array.from(document.querySelectorAll('.add-button'))
+        const removePaletteButtons = () => {getPaletteButtons().forEach(button => button.remove())}
+        const tree = document.getElementById('tree')
+        tree.addEventListener('click', (e) => {
+          removePaletteButtons()
+        })
+
+        function makeKinship(val) {
+          if (val == 'zh') {
+            return new ChineseKinship()
+          }
+          return new EnglishKinship()
+        }
+        let kinship = makeKinship(languageSelect.value)
+        // let kinship = new ChineseKinship()
+  
+        // helper and indexing functions
+        const childrenOf = {} // no api to get children of a node, so we add it to a list here
+        const addChild = (parent, child) => {
+          if (childrenOf[parent]) {
+            childrenOf[parent].push(child)
+          } else {
+            childrenOf[parent] = [child]
+          }
+        }
+        const getSiblings = (id) => {
+          const base = family.nodes[id]
+          const father_children = childrenOf[base.fid] || []
+          const mother_children = childrenOf[base.mid] || []
+          const siblingsSet = new Set([...father_children, ...mother_children])
+          siblingsSet.delete(id) // remove self from set of siblings
+          return [...siblingsSet]
+        }
+        const fullSex = {m: 'male', f: 'female'}
+        const oppositeSex = {m: 'f', f: 'm'}
+  
+        const family = new FamilyTree(document.getElementById("tree"), {
+          nodeBinding: {
+              field_0: "name"
+          },
+          nodes: [
+              { id: '_m', name: kinship.getName('_m'), gender: 'male'},
+          ],
+          template: 'myTemplate',
+          mode: 'dark',
+          enableSearch: false
+          // nodeTreeMenu: true
+        });
+        window.family = family // make it global
+  
+        function addRelative(curr_id, next) {
+          const curr_sex = curr_id.slice(-1)
+          const new_id = `${curr_id}.${next}`
+          const name = kinship.getName(new_id)
+          const next_gen = next[0]
+          const next_sex = next[1]
+  
+          if (next_gen == '+') { // parent
+            console.log('add parent called')
+            const otherParent = `${curr_id}.+${oppositeSex[next_sex]}`
+            if (otherParent in family.nodes) { // for some reason, the viz breaks if the partner doesn't exist
+              family.addPartnerAndParentNodes(otherParent, childrenOf[otherParent], {
+                id: new_id,
+                pids: [otherParent],
+                name: name,
+                gender: fullSex[next_sex]
+              })
+            } else {
+              family.addParentNode(
+                curr_id,
+                next_sex == 'm' ? 'fid' : 'mid',
+                {
+                  id: new_id,
+                  name: name,
+                  gender: fullSex[next_sex]
+                }
+              )
+            }
+            addChild(new_id, curr_id) // ftChildrenIds may work
+          } else if (next_gen == '-') { // child
+            // family.addChildNode({
+            //   id: new_id,
+            //   ...(curr_sex == 'm' ? {fid: curr_id} : {mid: curr_id}),
+            //   name: name,
+            //   gender: fullSex[next_sex]
+            // })
+            const otherParents = family.nodes[curr_id]?.pids
+            let midpid = {}
+            if (otherParents.length > 1) { // if one has more than one partners, we will only connect the node to the clicked-on parent
+              midpid = curr_sex == 'm' ? {fid: curr_id} : {mid: curr_id}
+              addChild(curr_id, new_id)
+            } else {
+              const otherParent = otherParents[0] || curr_id + `.~${oppositeSex[curr_sex]}` // in case no partners exist, we presume the other parent to be the spouse of curr (because unless there's incest the spouse node doesn't exist yet)
+              midpid = curr_sex == 'm' ? {fid: curr_id, mid: otherParent} : {fid: otherParent, mid: curr_id}
+              addChild(curr_id, new_id)
+              addChild(otherParent, new_id)
+            }
+            family.addChildNode({
+              id: new_id,
+              ...midpid,
+              name: name,
+              gender: fullSex[next_sex]
+            })
+          } else if (next_gen == '~') { // spouse
+            if (new_id in family.nodes) {
+              return // if partner already exists, don't add another (bc. idk y the api allows two of the same partners and then breaks things)
+            }
+            family.addPartnerNode({
+              id: new_id,
+              pids: [curr_id],
+              name: name,
+              gender: fullSex[next_sex]
+            })
+            if (childrenOf[curr_id]) {
+              childrenOf[curr_id].forEach(child => addChild(new_id, child))
+            }
+          } else { // generation == '=' | '>' | '<' (sibling)
+            
+          }
+        }
+  
+        family.on('mousedown', (e) => {e.stopPropagation()})
+        family.on('click', (sender, {event, node}) => {
+          removePaletteButtons()
+          console.log('event', event)
+          const curr_id = node.id
+          console.log(family.nodes)
+  
+          const hasMother = Boolean(family.nodes[curr_id].mid)
+          const hasFather = Boolean(family.nodes[curr_id].fid)
+  
+          const paletteOptions = [
+            ['Wife', '~f'],
+            hasFather ? [] : ['Father', '+m'],
+            hasMother ? [] : ['Mother', '+f'],
+            ['Husband', '~m'],
+            ['Son', '-m'],
+            ['Daughter', '-f'],
+          ]
+          const paletteButtons = paletteOptions.map(([relation, next], i) => {
+            if (!next) {
+              return ''
+            }
+            const btn = makeElement('button', {class: `add-button add-${relation.toLowerCase()}`}, `Add ${relation}`)
+            btn.addEventListener('click', (e) => {
+              addRelative(curr_id, next)
+              removePaletteButtons()
+            })
+            
+            // adding styling
+            let radius = 100
+            let angle = 360/paletteOptions.length * i
+            let horizontal_correction = 20
+            let x = Math.round(Math.cos(angle * Math.PI / 180)*(radius + horizontal_correction) + event.clientX)
+            let y = Math.round(-Math.sin(angle * Math.PI / 180)*radius + event.clientY)
+            btn.style.left = x + 'px'
+            btn.style.top = y + 'px'
+            return btn
+          })
+          
+          tree.append(...paletteButtons)
+          event.stopPropagation()
+          return false
+        })
+        languageSelect.addEventListener('change', (e) => {
+          kinship = makeKinship(e.target.value)
+          // family.load(Object.keys(family.nodes).map((id) => {const node = family.nodes[id]; node.name = kinship.getName(id); return node}))
+          family.load(Object.keys(family.nodes).map((id) => {const node = family.get(id); node.name = kinship.getName(id); return node}))
+        })
       })
+      
   </script> 
   </body>
 </html>

@@ -1,7 +1,7 @@
 // import { Kinship } from "./kinship";
 
 
-
+// TODO: put all of these global variables as fields in the EnglishKinship class
 var debugging = 0;
 
 var height = 0;
@@ -17,7 +17,7 @@ var valid = 9;
 
 var answers = [];
 var genders = [];
-var value1  = "";
+var value  = "";
 var value2 = "";
 // The genders array prevents us from making the following error:
 //    father's father's daughter = aunt & could also be mother
@@ -552,7 +552,7 @@ class EnglishKinship {
   */
   getName(path) {
     Clear()
-    if (path == "_"){
+    if (path == '_' || path == '_m' || path == '_f'){
       return "You";
     }
     path = path.split('.')
@@ -592,10 +592,11 @@ class EnglishKinship {
           break;
       }
     }
-    return value
+    return value 
+    if (value2 && value2.length < value.length)
+      return `${value2}, or ${value}`
+    return `${value}${value2 ? ' or ' + value2 : ''}`
   }
 
 }
-
-let kinship = new EnglishKinship()
 

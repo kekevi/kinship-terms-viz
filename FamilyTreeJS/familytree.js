@@ -1087,10 +1087,10 @@ var FamilyTree = function (e, t) {
         FamilyTree.isNEU(i.id) && (i.id = this.generateId());
         for (var l = [], o = 0; o < t.length; o++) {
           var s = this.get(t[o]);
-          if (!FamilyTree.isNEU(s.mid) && !FamilyTree.isNEU(s.fid))
-            return void console.error(
-              "father id (fid) or mather id (mid) has to be null or undefined"
-            );
+          // if (!FamilyTree.isNEU(s.mid) && !FamilyTree.isNEU(s.fid))
+          //   return void console.error(
+          //     "father id (fid) or mather id (mid) has to be null or undefined"
+          //   );
           FamilyTree.isNEU(s.mid)
             ? (s.mid = i.id)
             : FamilyTree.isNEU(s.mid) || (s.fid = i.id),
