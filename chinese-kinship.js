@@ -55,7 +55,7 @@ export class ChineseKinship {
       // reverse: false,		                  // reverse：true = what text calls root, false = what root calls text
       // mode: 'default',		                  // 模式选择：使用setMode方法定制不同地区模式，在此选择自定义模式
       // optimal: false,                      // 最短关系：计算两者之间的最短关系
-    })
+    }) || '???'
     
   }
 }
