@@ -2,6 +2,12 @@
 
 By Kevin Chen and Muqeeth Mohammed as part of COMP 590 Visualization Final Project.
 
+See the site in action here!: https://kekevi.github.io/kinship-terms-viz/
+
+Proposal, presentation, papers can be found in this shared Google Drive: https://drive.google.com/drive/folders/1nZQrv0dvzl2laAdOR_KCTCzbOwLu_RIP?usp=sharing
+
+NOTE: Final paper is also in this repo titled [`Interactive_visualization_of_kinships_terms.pdf`](Interactive_visualization_of_kinships_terms.pdf).
+
 ## Acknowledgements
 
 This project is based off of Balkan's FamilyTreeJS library.
@@ -45,3 +51,4 @@ The `id` field of Balkan FamilyTreeJS nodes are the path of the node.
 * add cross tree name (e.g. what does relative A call relative B)
 * add search bar that will automatically build the tree to get to a specific term
 * add reset and save/load buttons
+* add ability to swap sex of root node (You/user)
